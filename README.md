@@ -24,8 +24,7 @@ npm run build
 - 工作流文件：`.github/workflows/deploy.yml`
 - 触发条件：推送到 `main` 分支（以及手动触发）
 - 部署地址：<https://kongxiangzhouye.github.io/gameProgramerTest/>
-
-> 若仓库默认分支不是 `main`，请将工作流中的触发分支改为实际默认分支。
+- 首次部署前请先在 **Settings → Pages** 将 Source 设置为 **GitHub Actions**
 
 ## 前端路由与 404 fallback
 
