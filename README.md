@@ -21,6 +21,6 @@ npm run build
 
 项目目标部署地址：
 
-- https://kongxiangzhouye.github.io/gameProgramerTest/
+- https://brokenvvorld.github.io/gameProgramerTest/
 
 仓库已配置 GitHub Pages（Actions）自动部署。
