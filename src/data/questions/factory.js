@@ -1,3 +1,5 @@
+import { typeKeys } from '../profiles.js'
+
 export const stages = ['prototype', 'pipeline', 'content', 'testing', 'launch', 'retrospective']
 
 const stageLabels = {
@@ -9,16 +11,48 @@ const stageLabels = {
   retrospective: '复盘、归档、下一项目倾向',
 }
 
+/** 六级量表：完全 A → 完全 B；中间档为线性插值，故「居中」近似无倾向。 */
+export const spectrumStepLabels = ['完全 A', '较为 A', '稍微 A', '稍微 B', '较为 B', '完全 B']
+
+function emptyScores() {
+  return Object.fromEntries(typeKeys.map((key) => [key, 0]))
+}
+
+export function mergeScores(a, b, weightB) {
+  const w = Math.min(1, Math.max(0, weightB))
+  const out = emptyScores()
+  typeKeys.forEach((key) => {
+    const va = a[key] || 0
+    const vb = b[key] || 0
+    out[key] = va * (1 - w) + vb * w
+  })
+  return out
+}
+
+/** 两极 [文案A, scoresA]、[文案B, scoresB] → 六级选项（分数在两端间线性插值） */
+export function expandSpectrumOption(poleA, poleB) {
+  const [labelA, scoresA] = poleA
+  const [labelB, scoresB] = poleB
+  return spectrumStepLabels.map((stepLabel, index) => {
+    const t = index / (spectrumStepLabels.length - 1)
+    return {
+      text: stepLabel,
+      scores: mergeScores(scoresA, scoresB, t),
+    }
+  })
+}
+
 export function createQuestions(rows) {
-  return rows.map(([stage, text, options]) => ({
-    stage,
-    category: stageLabels[stage],
-    text,
-    options: options.map(([optionText, scores]) => ({
-      text: optionText,
-      scores,
-    })),
-  }))
+  return rows.map(([stage, text, poles]) => {
+    const [labelA] = poles[0]
+    const [labelB] = poles[1]
+    return {
+      stage,
+      category: stageLabels[stage],
+      text: `${text}\n\nA：${labelA}\nB：${labelB}`,
+      options: expandSpectrumOption(poles[0], poles[1]),
+    }
+  })
 }
 
 const optionSets = [
@@ -107,14 +141,24 @@ const prompts = {
 
 export function buildRoleQuestions(roleName, angleWords) {
   return stages.flatMap((stage, stageIndex) =>
-    prompts[stage].map((prompt, promptIndex) => ({
-      stage,
-      category: stageLabels[stage],
-      text: `${roleName}视角：${prompt}${angleWords[stage][promptIndex]}`,
-      options: optionSets[(stageIndex + promptIndex) % optionSets.length].map(([text, scores]) => ({
-        text,
-        scores,
-      })),
-    })),
+    prompts[stage].flatMap((prompt, promptIndex) => {
+      const set = optionSets[(stageIndex + promptIndex) % optionSets.length]
+      const base = `${roleName}视角：${prompt}${angleWords[stage][promptIndex]}`
+      const pairs = [
+        [set[0], set[1]],
+        [set[2], set[3]],
+      ]
+      return pairs.map(([poleA, poleB], pairIndex) => {
+        const [labelA] = poleA
+        const [labelB] = poleB
+        const suffix = pairIndex === 0 ? '' : ' · 对照二'
+        return {
+          stage,
+          category: stageLabels[stage],
+          text: `${base}${suffix}\n\nA：${labelA}\nB：${labelB}`,
+          options: expandSpectrumOption(poleA, poleB),
+        }
+      })
+    }),
   )
 }

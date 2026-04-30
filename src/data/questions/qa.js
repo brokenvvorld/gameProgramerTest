@@ -17,6 +17,14 @@ const sets = [
   [['“幸好这个上线前测出来了”', { cardCollection: 1, openWorldRpg: 1, competitiveShooter: 1 }], ['“这个复现步骤太清楚了”', { strategySimulation: 1, coopSurvival: 1, sandboxSocial: 1 }], ['“这个手感问题终于定位了”', { actionFighting: 2, sportsRacing: 1 }], ['“这个新手卡点被抓到了”', { casualPuzzleMobile: 2, narrativeAdventure: 1 }]],
 ]
 
-export const qaQuestions = createQuestions(Object.entries(texts).flatMap(([stage, list], stageIndex) =>
-  list.map((text, index) => [stage, text, sets[(stageIndex + index) % sets.length]]),
-))
+export const qaQuestions = createQuestions(
+  Object.entries(texts).flatMap(([stage, list], stageIndex) =>
+    list.flatMap((text, index) => {
+      const opts = sets[(stageIndex + index) % sets.length]
+      return [
+        [stage, text, [opts[0], opts[1]]],
+        [stage, `${text} · 对照二`, [opts[2], opts[3]]],
+      ]
+    }),
+  ),
+)

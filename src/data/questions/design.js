@@ -18,6 +18,14 @@ const options = [
   [['玩家记住一个地点', { narrativeAdventure: 3 }], ['玩家讨论一套打法', { strategySimulation: 2, openWorldRpg: 1 }], ['玩家喊朋友再来一局', { coopSurvival: 2, sandboxSocial: 1 }], ['玩家为了操作进步练习', { actionFighting: 2, sportsRacing: 2 }]],
 ]
 
-export const designQuestions = createQuestions(Object.entries(stems).flatMap(([stage, texts], stageIndex) =>
-  texts.map((text, index) => [stage, text, options[(stageIndex + index) % options.length]]),
-))
+export const designQuestions = createQuestions(
+  Object.entries(stems).flatMap(([stage, texts], stageIndex) =>
+    texts.flatMap((text, index) => {
+      const opts = options[(stageIndex + index) % options.length]
+      return [
+        [stage, text, [opts[0], opts[1]]],
+        [stage, `${text} · 对照二`, [opts[2], opts[3]]],
+      ]
+    }),
+  ),
+)
