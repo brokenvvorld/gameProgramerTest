@@ -17,6 +17,14 @@ const optionSets = [
   [['“我又回来打了一局”', { competitiveShooter: 2, sportsRacing: 1 }], ['“这次活动奖励挺香”', { cardCollection: 2, casualPuzzleMobile: 1 }], ['“这个房间适合朋友局”', { sandboxSocial: 3 }], ['“这个世界又更新了”', { openWorldRpg: 3 }]],
 ]
 
-export const operationQuestions = createQuestions(Object.entries(stageTexts).flatMap(([stage, texts], stageIndex) =>
-  texts.map((text, index) => [stage, text, optionSets[(stageIndex + index) % optionSets.length]]),
-))
+export const operationQuestions = createQuestions(
+  Object.entries(stageTexts).flatMap(([stage, texts], stageIndex) =>
+    texts.flatMap((text, index) => {
+      const opts = optionSets[(stageIndex + index) % optionSets.length]
+      return [
+        [stage, text, [opts[0], opts[1]]],
+        [stage, `${text} · 对照二`, [opts[2], opts[3]]],
+      ]
+    }),
+  ),
+)

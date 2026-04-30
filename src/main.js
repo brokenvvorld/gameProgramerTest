@@ -6,7 +6,7 @@ import { buildCrossRoleInsight } from './data/relations.js'
 import { questionBanks } from './data/questions/index.js'
 
 const avatarBase = `${import.meta.env.BASE_URL}avatars/`
-const storageKey = 'game-type-compass-role-history'
+const storageKey = 'game-type-compass-role-history-v2'
 const app = document.querySelector('#app')
 
 const state = {
@@ -17,7 +17,7 @@ const state = {
   activeQuestions: [],
 }
 
-const QUESTION_LIMIT = 18
+const QUESTION_LIMIT = 36
 
 const personalityNotes = {
   narrativeAdventure: {
@@ -100,39 +100,8 @@ function getQuestions() {
   return state.activeQuestions
 }
 
-function buildFallbackOption(options) {
-  const totalByType = options.reduce((acc, option) => {
-    Object.entries(option.scores).forEach(([key, value]) => {
-      acc[key] = (acc[key] || 0) + value
-    })
-    return acc
-  }, {})
-  const averageByType = Object.fromEntries(
-    Object.entries(totalByType)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([key, value]) => [key, Math.max(1, Math.round(value / options.length))]),
-  )
-  return {
-    text: '都不完全符合，我会结合项目阶段权衡',
-    scores: averageByType,
-  }
-}
-
-function normalizeQuestion(question) {
-  const optionLabels = ['偏向体验感受', '偏向系统推进', '偏向风险控制', '偏向效率与节奏']
-  const normalizedOptions = question.options.map((option, index) => ({
-    ...option,
-    text: `${optionLabels[index] || `方案 ${index + 1}`}：${option.text}`,
-  }))
-  return {
-    ...question,
-    options: [...normalizedOptions, buildFallbackOption(normalizedOptions)],
-  }
-}
-
 function pickQuestions(roleKey) {
-  const source = (questionBanks[roleKey] || []).map((question) => normalizeQuestion(question))
+  const source = questionBanks[roleKey] || []
   if (source.length <= QUESTION_LIMIT) return source
   const step = source.length / QUESTION_LIMIT
   return Array.from({ length: QUESTION_LIMIT }, (_, index) => source[Math.floor(index * step)])
@@ -161,7 +130,12 @@ function getRankings(roleKey = state.selectedRole, answers = state.answers) {
     })
   })
   return Object.entries(scores)
-    .map(([key, score]) => ({ key, score, ...profiles[key], role: roleProfiles[roleKey][key] }))
+    .map(([key, score]) => ({
+      key,
+      score: Math.round(score * 10) / 10,
+      ...profiles[key],
+      role: roleProfiles[roleKey][key],
+    }))
     .sort((a, b) => b.score - a.score)
 }
 
@@ -175,7 +149,9 @@ function getStageScores(roleKey = state.selectedRole, answers = state.answers) {
     const question = questions[questionIndex]
     const answer = question?.options[answerIndex]
     if (!question || !answer) return acc
-    acc[question.stage] = (acc[question.stage] || 0) + Object.values(answer.scores).reduce((sum, score) => sum + score, 0)
+    acc[question.stage] =
+      (acc[question.stage] || 0) +
+      Math.round(Object.values(answer.scores).reduce((sum, score) => sum + score, 0) * 10) / 10
     return acc
   }, {})
 }
@@ -296,13 +272,13 @@ function renderQuestion() {
         </aside>
         <section class="question-panel">
           <div class="question-head">
-            <p class="question-count">作为${role.name}，你选择什么？ · 第 ${state.current + 1} 题</p>
-            <h2>${question.text}</h2>
+            <p class="question-count">作为${role.name}，你在 A / B 之间站哪一档？ · 第 ${state.current + 1} 题</p>
+            <h2 class="question-stem">${question.text}</h2>
           </div>
-          <div class="options">
+          <div class="options options-spectrum">
             ${question.options.map((option, index) => `
-              <button class="option ${state.answers[state.current] === index ? 'active' : ''}" data-answer="${index}">
-                <span>${String.fromCharCode(65 + index)}</span>
+              <button class="option option-spectrum ${state.answers[state.current] === index ? 'active' : ''}" data-answer="${index}">
+                <span>${index + 1}</span>
                 ${option.text}
               </button>
             `).join('')}

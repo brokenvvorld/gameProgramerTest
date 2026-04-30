@@ -17,6 +17,14 @@ const sets = [
   [['“这个角色我想抽”', { cardCollection: 3 }], ['“这个地方我想截图”', { narrativeAdventure: 2, openWorldRpg: 1 }], ['“这招看起来太爽了”', { actionFighting: 3 }], ['“这张图适合发给朋友”', { sandboxSocial: 3 }]],
 ]
 
-export const artQuestions = createQuestions(Object.entries(texts).flatMap(([stage, list], stageIndex) =>
-  list.map((text, index) => [stage, text, sets[(stageIndex + index) % sets.length]]),
-))
+export const artQuestions = createQuestions(
+  Object.entries(texts).flatMap(([stage, list], stageIndex) =>
+    list.flatMap((text, index) => {
+      const opts = sets[(stageIndex + index) % sets.length]
+      return [
+        [stage, text, [opts[0], opts[1]]],
+        [stage, `${text} · 对照二`, [opts[2], opts[3]]],
+      ]
+    }),
+  ),
+)

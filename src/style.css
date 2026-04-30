@@ -591,6 +591,11 @@ h2 {
   min-height: 104px;
 }
 
+.question-stem {
+  white-space: pre-line;
+  margin-bottom: 0;
+}
+
 .question-count {
   margin-bottom: 8px;
   color: #65758c;
@@ -634,6 +639,21 @@ h2 {
   border-color: #2d6d73;
   background: #eff7f5;
   box-shadow: inset 4px 0 0 #2d6d73;
+}
+
+.options-spectrum {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 0;
+}
+
+@media (max-width: 640px) {
+  .options-spectrum {
+    grid-template-columns: 1fr;
+  }
+}
+
+.option-spectrum {
+  min-height: 52px;
 }
 
 .actions {
