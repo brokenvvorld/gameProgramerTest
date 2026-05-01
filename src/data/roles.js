@@ -5,7 +5,7 @@ export const roles = {
     badge: 'Client',
     icon: '⌁',
     description: '关心画面、输入、反馈、性能和玩家手里的那一秒。',
-    tone: '作为客户端的你',
+    tone: '当你成为客户端时',
     recommendRoles: ['server', 'qa'],
   },
   server: {
@@ -14,7 +14,7 @@ export const roles = {
     badge: 'Server',
     icon: '◎',
     description: '关心同步、房间、状态、稳定和一堆人同时在线时的秩序。',
-    tone: '作为服务器的你',
+    tone: '当你成为服务器时',
     recommendRoles: ['client', 'operation'],
   },
   design: {
@@ -23,7 +23,7 @@ export const roles = {
     badge: 'Design',
     icon: '✦',
     description: '关心规则、节奏、目标、数值和玩家为什么还想再来一次。',
-    tone: '作为策划的你',
+    tone: '当你成为策划时',
     recommendRoles: ['qa', 'operation'],
   },
   operation: {
@@ -32,7 +32,7 @@ export const roles = {
     badge: 'Ops',
     icon: '◈',
     description: '关心活动、留存、社区、版本节奏和玩家回来的理由。',
-    tone: '作为运营的你',
+    tone: '当你成为运营时',
     recommendRoles: ['design', 'server'],
   },
   art: {
@@ -41,7 +41,7 @@ export const roles = {
     badge: 'Art',
     icon: '✺',
     description: '关心风格、角色、场景、演出和玩家第一眼记住什么。',
-    tone: '作为美术的你',
+    tone: '当你成为美术时',
     recommendRoles: ['client', 'design'],
   },
   qa: {
@@ -50,7 +50,7 @@ export const roles = {
     badge: 'QA',
     icon: '◇',
     description: '关心边界、复现、稳定、可读性和那些奇怪但真实的玩家操作。',
-    tone: '作为测试的你',
+    tone: '当你成为测试时',
     recommendRoles: ['client', 'design'],
   },
 }
