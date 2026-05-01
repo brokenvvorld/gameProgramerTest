@@ -15,6 +15,33 @@ const avatarBase = `${import.meta.env.BASE_URL}avatars/`
 const storageKey = 'game-workstyle-compass-v2-history'
 const app = document.querySelector('#app')
 
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function showFatalError(message, detail) {
+  const safeMessage = escapeHtml(message || '页面加载失败')
+  const safeDetail = detail ? escapeHtml(detail) : ''
+  if (app) {
+    app.innerHTML = `
+      <main class="app-shell" style="display:grid;place-items:center;padding:24px;">
+        <section style="max-width:420px;padding:24px;border:1px solid #d8e2ea;border-radius:8px;background:#fff;">
+          <h1 style="margin:0 0 12px;font-size:1.25rem;">无法加载应用</h1>
+          <p style="margin:0 0 8px;color:#4d5b70;line-height:1.6;">${safeMessage}</p>
+          ${safeDetail ? `<pre style="margin:0;padding:12px;background:#f4f7fa;border-radius:6px;font-size:0.8rem;overflow:auto;white-space:pre-wrap;">${safeDetail}</pre>` : ''}
+          <p style="margin:12px 0 0;color:#65758c;font-size:0.9rem;">请刷新页面或换用较新的浏览器。若部署在子目录，请确认资源路径与站点根路径一致。</p>
+        </section>
+      </main>
+    `
+    return
+  }
+  document.body.innerHTML = `<p style="padding:16px;font-family:sans-serif;">${safeMessage}</p>`
+}
+
 const state = {
   screen: 'intro',
   selectedRole: null,
@@ -631,7 +658,8 @@ async function copyCrossShareImage(insight) {
   await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
 }
 
-app.addEventListener('click', async (event) => {
+if (app) {
+  app.addEventListener('click', async (event) => {
   const roleButton = event.target.closest('[data-role]')
   const answerButton = event.target.closest('[data-answer]')
   const skipButton = event.target.closest('[data-skip]')
@@ -741,6 +769,16 @@ app.addEventListener('click', async (event) => {
       actionButton.disabled = false
     }
   }
-})
+  })
+}
 
-render()
+try {
+  if (!app) {
+    showFatalError('找不到页面挂载点 #app。')
+  } else {
+    render()
+  }
+} catch (error) {
+  console.error(error)
+  showFatalError('脚本运行时出错，界面未能渲染。', error?.stack || error?.message)
+}
