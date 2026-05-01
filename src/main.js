@@ -15,6 +15,11 @@ const avatarBase = `${import.meta.env.BASE_URL}avatars/`
 const storageKey = 'game-workstyle-compass-v2-history'
 const app = document.querySelector('#app')
 
+/** 本地历史或旧版本数据里可能出现无效的 dimension key，避免读 meta 时抛错导致整页白屏 */
+function dimensionTitle(key) {
+  return key && dimensionMeta[key] ? dimensionMeta[key].title : '信息不足'
+}
+
 const state = {
   screen: 'intro',
   selectedRole: null,
@@ -80,7 +85,7 @@ function renderIntro() {
             ${roleOrder.map((roleKey) => {
               const role = roles[roleKey]
               const done = history[roleKey]
-              const topDimension = done?.topDimensionKey ? dimensionMeta[done.topDimensionKey].title : '开始测试'
+              const topDimension = done ? dimensionTitle(done.topDimensionKey) : '开始测试'
               return `
                 <button class="role-card ${done ? 'completed' : 'pending'}" data-role="${roleKey}">
                   <span>${role.icon}</span>
@@ -120,7 +125,7 @@ function renderIntro() {
                   <div class="role-status ${done ? 'done' : ''}">
                     <span>${role.icon}</span>
                     <b>${role.shortName}</b>
-                    <small>${done ? dimensionMeta[done.topDimensionKey]?.title || '信息不足' : '待测试'}</small>
+                    <small>${done ? dimensionTitle(done.topDimensionKey) : '待测试'}</small>
                   </div>
                 `
               }).join('')}
@@ -224,9 +229,9 @@ function renderResult() {
   const result = getCurrentResult()
   saveCurrentResult(result)
   const role = roles[state.selectedRole]
-  const topMeta = result.topDimensionKey ? dimensionMeta[result.topDimensionKey] : null
-  const secondMeta = result.secondDimensionKey ? dimensionMeta[result.secondDimensionKey] : null
-  const weakestMeta = result.weakestDimensionKey ? dimensionMeta[result.weakestDimensionKey] : null
+  const topMeta = result.topDimensionKey ? dimensionMeta[result.topDimensionKey] ?? null : null
+  const secondMeta = result.secondDimensionKey ? dimensionMeta[result.secondDimensionKey] ?? null : null
+  const weakestMeta = result.weakestDimensionKey ? dimensionMeta[result.weakestDimensionKey] ?? null : null
 
   app.innerHTML = `
     <main class="app-shell">
@@ -314,7 +319,7 @@ function renderResult() {
           <div class="focus-list">
             ${[result.topDimension, result.secondDimension, result.weakestDimension].filter(Boolean).map((item, index) => `
               <article class="${index === 2 ? 'soft' : ''}">
-                <b>${index === 0 ? '最强倾向' : index === 1 ? '第二倾向' : '相对较弱'} · ${dimensionMeta[item.key].title}</b>
+                <b>${index === 0 ? '最强倾向' : index === 1 ? '第二倾向' : '相对较弱'} · ${dimensionTitle(item.key)}</b>
                 <span>${item.score}%</span>
               </article>
             `).join('')}
@@ -505,7 +510,7 @@ async function copyRoleShareImage(result) {
   canvas.height = 1600
   const ctx = canvas.getContext('2d')
   const role = roles[result.roleKey]
-  const topMeta = result.topDimensionKey ? dimensionMeta[result.topDimensionKey] : null
+  const topMeta = result.topDimensionKey ? dimensionMeta[result.topDimensionKey] ?? null : null
 
   ctx.fillStyle = '#e8edf3'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
